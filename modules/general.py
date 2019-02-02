@@ -476,7 +476,7 @@ Open Interest : {data['oi']}
         await p.paginate()
 
     @commands.command()
-    async def earnings(self, ctx):
+    async def earnings_old(self, ctx):
         page = "https://finviz.com/screener.ashx?v=110&s=n_earningsafter&f=sh_curvol_o1000"
         base = "https://finviz.com/"
         page = requests.get(page).text 
@@ -533,7 +533,7 @@ Volume : {data['volume']}""")
         await p.paginate()
 
     @commands.command()
-    async def earnings_old(self, ctx, data: str = None):
+    async def earnings(self, ctx, data: str = None):
         if data is None:
             return await usage(ctx, ['tomorrow or today'], ['tomorrow'])
         
