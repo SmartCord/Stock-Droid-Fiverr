@@ -486,28 +486,31 @@ Open Interest : {data['oi']}
         except IndexError:
             e = embed(ctx, "No earnings")
             return await ctx.send(embed=e)
-        print(rows)
         datas = []
-        for row in rows:
-            td = row.find_all('td')
-            ticker = td[1]
-            name = td[2]
-            cap = td[6]
-            pe = td[7]
-            price = td[8]
-            change = td[9]
-            volume = td[10]
-            data = {
-                "ticker":ticker.text,
-                "href":ticker.find('a')['href'],
-                "name":name.text,
-                "price":price.text,
-                "change":change.text,
-                "market_cap":cap.text,
-                "P/E":pe.text,
-                "volume":volume.text 
-            }
-            datas.append(data)
+        try:
+            for row in rows:
+                td = row.find_all('td')
+                ticker = td[1]
+                name = td[2]
+                cap = td[6]
+                pe = td[7]
+                price = td[8]
+                change = td[9]
+                volume = td[10]
+                data = {
+                    "ticker":ticker.text,
+                    "href":ticker.find('a')['href'],
+                    "name":name.text,
+                    "price":price.text,
+                    "change":change.text,
+                    "market_cap":cap.text,
+                    "P/E":pe.text,
+                    "volume":volume.text 
+                }
+                datas.append(data)
+        except IndexError:
+            e = embed(ctx, "No Earnings to show")
+            return await ctx.send(embed=e)
         
         pg = commands.Paginator(prefix="", suffix="", max_size=500)
 
