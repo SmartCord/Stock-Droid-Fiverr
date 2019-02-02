@@ -481,7 +481,11 @@ Open Interest : {data['oi']}
         base = "https://finviz.com/"
         page = requests.get(page).text 
         bs = soup(page, 'html.parser')
-        rows = bs.find(id='screener-content').find('table').find_all('tr')[5].find('td').find('table').find_all('tr')[1:]
+        try:
+            rows = bs.find(id='screener-content').find('table').find_all('tr')[5].find('td').find('table').find_all('tr')[1:]
+        except IndexError:
+            e = embed(ctx, "No earnings")
+            return await ctx.send(embed=e)
         print(rows)
         datas = []
         for row in rows:
