@@ -574,6 +574,7 @@ Volume : {data['volume']}""")
             else:
                 if forTomorrow:
                     page = li.find('a')
+                    print(page)
                     if page is None:
                         e = embed(ctx, "No earnings for tomorrow")
                         await ctx.send(embed=e)
