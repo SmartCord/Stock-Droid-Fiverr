@@ -1053,7 +1053,7 @@ Resume Time : {data['resume_time']}""")
             print(row)
 
     @commands.command()
-    async def sec(self, ctx):
+    async def ssr(self, ctx):
         page = "https://www.nasdaqtrader.com/trader.aspx?id=shortsalecircuitbreaker"
         page = requests.get(page).text 
         bs = soup(page, 'html.parser')
@@ -1097,7 +1097,7 @@ Trigger Time : {d['time']}""")
     @commands.command(name="commands")
     async def _commands(self, ctx):
         p = utils.returnPrefix()
-        cmds = ["news <symbol>", "info <symbol>", "chart <symbol>", "highs <symbol>", "lows <symbol>", "trending", "options <symbol>", "earnings", "gainers", "losers", "unusual", "downgrades", "upgrades", "overbought", "oversold", "halts", "heatmap", "sec"]
+        cmds = ["news <symbol>", "info <symbol>", "chart <symbol>", "highs <symbol>", "lows <symbol>", "trending", "options <symbol>", "earnings", "gainers", "losers", "unusual", "downgrades", "upgrades", "overbought", "oversold", "halts", "heatmap", "ssr"]
 
         pg = commands.Paginator(prefix="", suffix="", max_size=150)
         for cmd in cmds:
