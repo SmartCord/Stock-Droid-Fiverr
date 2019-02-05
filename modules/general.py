@@ -80,48 +80,29 @@ class General:
     async def info(self, ctx, *, query: str = None):
         if query is None:
             return await usage(ctx, ['symbol'], ['cgc'])
+        
+        dataToScrape = [
+            'Prev Close AA',
+            'Open',
+            'After Market',
+            'Change Percent AA',
+            'Market Cap AA',
+            'Dividend % AA',
+            'Volume AA',
+            'Average Volume AA',
+            'Day Range AA',
+            '52 Week Range AA',
+            'Performance Week Month Quarted YTD AA',
+            'Relative Volume AA',
+            'Short Float AA',
+            'Earnings AA'
+        ]
 
-        def genData(n, v, i=True):
-            try:
-                data = {
-                    "n":n.text,
-                    "v":v.text,
-                    "inline":i
-                }
-            except:
-                data = {
-                    "n":n,
-                    'v':v,
-                    'inline':i
-                }
-            return data
-
-        # Get data from finvizz
-        page = "https://finviz.com/quote.ashx?t=" + query.upper()
-        r = requests.get(page)
-        page = r.text 
-        datas = []
-        filters = (
-            'Ticker',
-            'Price',
-            'Dividend %',
-            'Volume',
-            'Avg Volume',
-            'Rel Volume',
-            'Market Cap',
-            'Short Float',
-            'Shs Outstand',
-            'Earnings',
-            'Perf Week',
-            'Perf Month',
-            'Perf Quarter',
-            'Perf YTD',
-            'Prev Close'
-        )
-
+        page = requests.get(f"https://finviz.com/quote.ashx?t={query.upper()}").text 
         bs = soup(page, 'html.parser')
-        main_table = bs.find('table', attrs={'class':'snapshot-table2'})
-        if main_table is None:
+        table = bs.find('table', attrs={'class':'snapshot-table2'})
+        datas = []
+        if table is None:
             page = "https://finviz.com/search.ashx?p={}".format(query.upper())
             r = requests.get(page)
             page = r.text 
@@ -134,25 +115,36 @@ class General:
             body = main_table.find_all('tr')[1].find_all('td')[0].text
             e = embed(ctx, title=f"No results found for {query}", description=f"Maybe you meant {body}?")
             return await ctx.send(embed=e)
-
-        perfs = [] 
-
-        for row in main_table.find_all('tr', attrs={'class':'table-dark-row'}):
+        
+        filters = ['Market Cap', 'Dividend %', 'Short Float', '52W Range', 'Prev Close', 'Change', 'Rel Volume', 'Avg Volume', 'Perf Week', 'Perf Month', 'Perf Quarter', 'Perf YTD', 'Earnings', 'Price']
+        perfs = []
+        datas = []
+        rows = table.find_all('tr')
+        price = "undefined"
+        for row in rows:
             names = row.find_all('td', attrs={'class':'snapshot-td2-cp'})
             values = row.find_all('td', attrs={'class':'snapshot-td2'})
+
             for name, value in zip(names, values):
                 if name.text in filters:
-                    if name.text in ('Perf Week', 'Perf Month', 'Perf Quarter', 'Perf YTD'):
+                    if name.text == 'Price':
+                        price = value.text 
+                    elif name.text in ('Perf Week', 'Perf Month', 'Perf Quarter', 'Perf YT'):
                         perfs.append(f"{name.text.split()[1]} : {value.text}")
                     else:
-                        data = genData(name, value)
+                        data = {name.text, value.text}
                         datas.append(data)
+                        
+        company = bs.find('table', attrs={'class':'fullview-title'}).select('tr:nth-child(2)')[0].text
+        faviconA = bs.select('table.fullview-title tr:nth-child(2) a')[0]['href']
+        faviconX = favicon.get(faviconA)[0]
+        page = f"https://finance.yahoo.com/quote/{query.upper()}?p={query.upper()}"
+        bs = soup(requests.get(page).text, 'html.parser')   
 
-        data = genData("Performance", "\n".join(perfs))
-        datas.append(data)
 
-        e = embed(title="Stock Info for {}".format(query.upper()), fields=datas, ctx=ctx)
+        e = embed(ctx, f'{company} is currently at ${price}', description=query.upper(), customThumbnail=faviconX.url)
         await ctx.send(embed=e)
+
 
     @commands.command()
     async def chart(self, ctx, *, query: str = None):
@@ -1060,22 +1052,25 @@ Resume Time : {data['resume_time']}""")
 
         table = bs.find_all('div', attrs={'class':'genTable'})[2].find('table').find_all('tr')[1:]
         datas = []
+        try:
+            for row in table:
+                td = row.find_all('td')
+                symbol = td[0].text 
+                name = td[1].text
+                market = td[2].text
+                time = td[3].text
 
-        for row in table:
-            td = row.find_all('td')
-            symbol = td[0].text 
-            name = td[1].text
-            market = td[2].text
-            time = td[3].text
-
-            data = {
-                "symbol":symbol,
-                "href":f"https://finviz.com/quote.ashx?t={symbol}",
-                "name":name,
-                "market":market,
-                "time":time 
-            }
-            datas.append(data)
+                data = {
+                    "symbol":symbol,
+                    "href":f"https://finviz.com/quote.ashx?t={symbol}",
+                    "name":name,
+                    "market":market,
+                    "time":time 
+                }
+                datas.append(data)
+        except IndexError:
+            e = embed(ctx, "There's nothing to show here.")
+            return await ctx.send(embed=e)
 
         pg = commands.Paginator(prefix="", suffix="", max_size=700)
         embeds = []

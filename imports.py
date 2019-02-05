@@ -1,4 +1,4 @@
-import discord, asyncio, pathlib, random, requests, ast, io, textwrap
+import discord, asyncio, pathlib, random, requests, ast, io, textwrap, favicon
 from contextlib import redirect_stdout
 from bs4 import BeautifulSoup as soup
 from discord.ext import commands 
